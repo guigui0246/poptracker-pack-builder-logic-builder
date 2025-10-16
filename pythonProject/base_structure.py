@@ -1,11 +1,11 @@
 import os
 import json
-import tkinter as tk
-from tkinter import filedialog
+from typing import Any
 import requests
+# flake8: noqa: E501 (line too long)
 
 
-def create_base_structure(path: str, game_name: str, game_dict: dict):
+def create_base_structure(path: str, game_name: str, game_dict: dict[str, dict[str, Any]]):
     """
     creates every needed directory and file needed to get a basic poptracker pack working and loading if the needed
     file is not already present
@@ -71,7 +71,7 @@ end
 
 function onClearHandler(slot_data)
     local clear_timer = os.clock()
-    
+
     ScriptHost:RemoveWatchForCode("StateChange")
     -- Disable tracker updates.
     Tracker.BulkUpdate = true
@@ -239,7 +239,7 @@ function onEventsLaunch(key, value)
     updateEvents(value)
 end
 
--- this Autofill function is meant as an example on how to do the reading from slotdata and mapping the values to 
+-- this Autofill function is meant as an example on how to do the reading from slotdata and mapping the values to
 -- your own settings
 -- function autoFill()
 --     if SLOT_DATA == nil  then
@@ -264,7 +264,7 @@ end
 --                 item = Tracker:FindObjectForCode(slotCodes[settings_name].code)
 --                 if item.Type == "toggle" then
 --                     item.Active = slotCodes[settings_name].mapping[settings_value]
---                 else 
+--                 else
 --                     -- print(k,v,Tracker:FindObjectForCode(slotCodes[k].code).CurrentStage, slotCodes[k].mapping[v])
 --                     item.CurrentStage = slotCodes[settings_name].mapping[settings_value]
 --                 end
@@ -346,7 +346,7 @@ end
 --     ["item_flags"] = 2,
 --     ["entrance"] = ,
 --     ["item"] = 66062,
--- } 
+-- }
 """
             )
     if not os.path.exists(path + "/scripts/init.lua"):
@@ -364,10 +364,10 @@ require("scripts/logic/logic_main")
 
 -- Maps
 if Tracker.ActiveVariantUID == "maps-u" then
-    Tracker:AddMaps("maps/maps-u.json")  
+    Tracker:AddMaps("maps/maps-u.json")
 else
-    Tracker:AddMaps("maps/maps.json")  
-end  
+    Tracker:AddMaps("maps/maps.json")
+end
 
 if PopVersion and PopVersion >= "0.23.0" then
     Tracker:AddLocations("locations/dungeons.json")
@@ -474,7 +474,7 @@ Archipelago:AddRetrievedHandler("notify launch handler", onNotifyLaunch)
     if not os.path.exists(path + "manifest.json"):
         game_name_lua = game_name.lower().replace(' ', '_')
         with open(path + "/manifest.json", "w", encoding="utf-8") as manifest:
-            manifest_json = {
+            manifest_json: dict[str, Any] = {
                 "name": f"{game_name} Archipelago",
                 "game_name": f"{game_name}",
                 "package_version": "0.0.1",
@@ -489,6 +489,10 @@ Archipelago:AddRetrievedHandler("notify launch handler", onNotifyLaunch)
             # manifest["platform"] = "snes"
             # manifest["versions_url"] = "https://raw.githubusercontent.com/<username>/<repo_name>/versions/versions.json"
             manifest.write(json.dumps(manifest_json, indent=4))
+    else:
+        with open(path + "/manifest.json", "r", encoding="utf-8") as manifest:
+            manifest_json = json.load(manifest)
+        game_name_lua = manifest_json["game_name"].lower().replace(' ', '_')
     if not os.path.exists(path + "/scripts/logic/logic_main.lua"):
         with open(path + "/scripts/logic/logic_main.lua", "w", encoding="utf-8") as logic_lua:
             logic_lua.write(
@@ -528,7 +532,7 @@ function Table_insert_at(er_table, key, value)
     table.insert(er_table[key], value)
 end
 
--- 
+--
 function CanReach(name)
     -- if type(name) == "table" then
     --     -- print("-----------")
@@ -557,9 +561,9 @@ function CanReach(name)
         --entry_point:discover(ACCESS_NORMAL, 0) -- since there is no code to track indirect connections, we run it twice here
         --entry_point:discover(ACCESS_NORMAL, 0)
     end
-    
+
     location = NAMED_LOCATIONS[name]
-    
+
     if location == nil then
         return ACCESS_NONE
     end
@@ -616,7 +620,7 @@ function {game_name_lua}_location:connect_one_way(exit, rule)
     self.exits[#self.exits + 1] = \u007b exit, rule \u007d
 end
 
--- marks a 2-way connection between 2 locations. acts as a shortcut for 2 connect_one_way-calls 
+-- marks a 2-way connection between 2 locations. acts as a shortcut for 2 connect_one_way-calls
 function {game_name_lua}_location:connect_two_ways(exit, rule)
     self:connect_one_way(exit, rule)
     exit:connect_one_way(self, rule)
@@ -674,11 +678,11 @@ function {game_name_lua}_location:accessibility()
     return res
 end
 
--- 
+--
 function {game_name_lua}_location:discover(accessibility, keys)
     -- checks if given Accessbibility is higer then last stored one
     -- prevents walking in circles
-    
+
     if accessibility > self:accessibility() then
         self.keys = math.huge -- resets keys used up to this point
         accessibilityCache[self] = accessibility
@@ -698,10 +702,10 @@ function {game_name_lua}_location:discover(accessibility, keys)
             if location == nil then
                 location = exit[1] or empty_location-- exit name
             end
-            
+
             local oldAccess = location:accessibility() -- get most recent accessibilty level for exit
             local oldKey = location.keys or 0
-            
+
             if oldAccess < accessibility then -- if new accessibility from above is higher then currently stored one, so is more accessible then before
                 local rule = exit[2] -- get rules to check
 
@@ -721,7 +725,7 @@ function {game_name_lua}_location:discover(accessibility, keys)
                     print("Warning: " .. self.name .. " -> " .. location.name .. " rule returned nil")
                     access = ACCESS_NONE
                 end
-               
+
                 if key == nil then
                     key = keys
                 end
@@ -737,7 +741,7 @@ end
 
 entry_point = {game_name_lua}_location.new("entry_point")
 
--- 
+--
 function StateChanged()
     stale = true
     -- entry_point:discover(AccessibilityLevel.Normal, 0)
@@ -761,7 +765,7 @@ local bool_to_accesslvl = {
     [true] = ACCESS_NORMAL,
     [false] = ACCESS_NONE
 }
-                
+
 function A(result)
     if result then
         return ACCESS_NORMAL
@@ -840,7 +844,7 @@ function Has(item, amount, amountInLogic)
 end
 
 
--- ANy function added here and used in access rules should try to return an Accessibility Level if it is used inside 
+-- ANy function added here and used in access rules should try to return an Accessibility Level if it is used inside
 -- the ANY() and ALL() functions
 --
 --"""
@@ -866,15 +870,14 @@ end
         return exit()
 
 
-def _create_mappings(path: str, game_data: dict[str, int]):
+def _create_mappings(path: str, game_data: dict[str, Any]):
     """
     writes the 2 mapping files needed for location and item tracking via AP
     :param game_data:
     :return:
     """
-    items_data = game_data["item_name_to_id"]
     locations_data = game_data["location_name_to_id"]
-    item_name_data = {**items_data, **locations_data}
+    item_name_data: dict[str, Any] = {**items_data, **locations_data}
     _write_mapping(path=path, file_name="item_mapping", data=items_data, type="items")
     _write_mapping(
         path=path, file_name="location_mapping", data=locations_data, type="locations"
@@ -885,7 +888,7 @@ def _create_mappings(path: str, game_data: dict[str, int]):
     pass
 
 
-def _write_mapping(path: str, file_name: str, data: dict[str, int], type: str):
+def _write_mapping(path: str, file_name: str, data: dict[str, Any], type: str):
     """
     writes the corresponding mapping file if AP-ID's to names.
     searches for the most common delimiters used in locationnames to possibly preselect/-create some regions.
@@ -917,8 +920,6 @@ def _write_mapping(path: str, file_name: str, data: dict[str, int], type: str):
                     )
             case "locations":
                 for name, ids in data.items():
-                    br = "false"
-
                     for i, spacer in enumerate(delimiter):
                         if spacer in name:
                             opened = name.find("(")
@@ -948,10 +949,14 @@ def _write_mapping(path: str, file_name: str, data: dict[str, int], type: str):
                         f'\t["{name.replace(" ", "").lower()}"] = "{name}",'
                         f"\n"
                     )
+            case _:
+                pass
         mapping.write("\u007d")
 
 
 if __name__ == "__main__":
+    import tkinter as tk
+    from tkinter import filedialog
     root = tk.Tk()
     root.withdraw()
 
@@ -961,7 +966,7 @@ if __name__ == "__main__":
     If there is no file called 'datapackage_url.txt' already present please provide the requested information.
     """
     )
-    read_file_path = tk.filedialog.askdirectory()
+    read_file_path = filedialog.askdirectory()
     if not os.path.exists(read_file_path + "/datapackage_url.txt"):
         with open(read_file_path + "/datapackage_url.txt", "w", encoding="utf-8") as base_file:
             url = (

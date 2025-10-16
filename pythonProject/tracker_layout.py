@@ -1,18 +1,17 @@
 import json
 import math
-import tkinter as tk
-from tkinter import filedialog
+from typing import Any
 
 
-def _maps_layouts(map_name):
-    layout_json = {
+def _maps_layouts(map_name: str) -> dict[str, Any]:
+    layout_json: dict[str, Any] = {
         "title": f"{map_name}",
         "content": {"type": "map", "maps": [f"{map_name}"]},
     }
     return layout_json
 
 
-def create_tracker_tabs(path: str, maps_names: list):
+def create_tracker_tabs(path: str, maps_names: list[str]):
     """
     creates a json scheme that adds the created maps from create_maps() into the loaded tracker file
     :param path:
@@ -21,8 +20,8 @@ def create_tracker_tabs(path: str, maps_names: list):
     """
 
     with open(path + "/layouts/tabs.json", "w", encoding="utf-8") as tabs:
-        tabbed_maps_horizontal = {"type": "tabbed", "tabs": []}
-        tabbed_maps_vertical = {"type": "tabbed", "tabs": []}
+        tabbed_maps_horizontal: dict[str, Any] = {"type": "tabbed", "tabs": []}
+        tabbed_maps_vertical: dict[str, Any] = {"type": "tabbed", "tabs": []}
 
         for map in maps_names:
             tabbed_maps_vertical["tabs"].append(_maps_layouts(map))
@@ -45,7 +44,7 @@ def create_broadcast_layout(path: str):
     :return:
     """
     with open(path + "/layouts/broadcast.json", "w", encoding="utf-8") as broadcast:
-        broadcast_json = {
+        broadcast_json: dict[str, Any] = {
             "tracker_broadcast": {
                 "type": "array",
                 "orientation": "vertical",
@@ -76,7 +75,7 @@ def create_tracker_basic_layout(path: str):
     :return:
     """
     with open(path + "/layouts/tracker.json", "w", encoding="utf-8") as tracker:
-        track_data = {
+        track_data: dict[str, Any] = {
             "tracker_default": {
                 "type": "container",
                 "background": "#00000000",
@@ -191,7 +190,7 @@ def create_tracker_basic_layout(path: str):
         tracker.write(json.dumps(track_data, indent=4))
     # #
     with open(path + "/layouts/settings_popup.json", "w", encoding="utf-8") as settings_popup:
-        settings_popup_json = {
+        settings_popup_json: dict[str, Any] = {
             "settings_popup": {
                 "type": "array",
                 "margin": "5",
@@ -222,14 +221,14 @@ def create_item_layout(path: str):
     :param path:
     :return:
     """
-    item_codes = []
+    item_codes: list[str] = []
     with open(path + "/items/items.json", encoding="utf-8") as items:
         json_data = json.load(items)
         for data in json_data:
             if not data == {}:
                 item_codes.append(data["codes"])
     with open(path + "/layouts/items.json", "w", encoding="utf-8") as item_layout:
-        item_layout_json = dict()
+        item_layout_json: dict[str, Any] = dict()
         item_layout_json["shared_item_grid_horizontal"] = {
             "type": "array",
             "orientation": "vertical",
@@ -298,8 +297,6 @@ def create_item_layout(path: str):
 
 
 if __name__ == "__main__":
-    import json
-    import math
     import tkinter as tk
     from tkinter import filedialog
 
@@ -307,15 +304,15 @@ if __name__ == "__main__":
     root.withdraw()
 
     print("Select the base-folder of the pack:")
-    save_file_path = tk.filedialog.askdirectory()
+    save_file_path = filedialog.askdirectory()
     print("Path to base-folder of the pack: ", save_file_path)
 
-    read_input = []
-    location_list = []
-    temp = []
-    lvls = set()
-    locations_dict = dict()
-    maps_names = []
+    read_input: list[list[str]] = []
+    location_list: list[list[str]] = []
+    temp: list[str] = []
+    lvls: set[str] | list[str] = set()
+    locations_dict: dict[str, str] = dict()
+    maps_names: list[str] = []
     with open(save_file_path + "/scripts/autotracking/location_mapping.lua", encoding="utf-8") as mapping:
         while inputs := mapping.readline():
             if "]" in inputs:
@@ -325,7 +322,7 @@ if __name__ == "__main__":
                 pass
     for k, _ in enumerate(read_input):
         read_input[k][1] = read_input[k][1][
-            read_input[k][1].index("{") + 1 : read_input[k][1].index("}")
+            read_input[k][1].index("{") + 1: read_input[k][1].index("}")
         ]
         location_list.append(
             read_input[k][1].replace("@", "").replace('"', "").split("/")

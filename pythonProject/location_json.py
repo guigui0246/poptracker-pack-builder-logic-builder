@@ -1,8 +1,10 @@
 import json
+import os
 import random
-import tkinter as tk
-from tkinter import filedialog
-from item_json import _item_consumable_preset
+from typing import Any
+
+from .item_json import item_consumable_preset
+# flake8: noqa: E501 (line too long)
 
 
 def _maps_json(map_name: str):
@@ -11,7 +13,7 @@ def _maps_json(map_name: str):
     :param str map_name: Name of the Region to create a map listing off of.
     :return dict: returns a JSON-compatible dict containing the basic option for a single map definition in poptracker
     """
-    map_json_obj = {
+    map_json_obj: dict[str, Any] = {
         "name": f"{map_name}",
         "location_size": 6,
         "location_border_thickness": 1,
@@ -21,11 +23,11 @@ def _maps_json(map_name: str):
 
 
 def _write_locations(
-    loc_dict: dict,
+    loc_dict: dict[str, Any],
     region: str,
-    location_list: list,
-    logic_dict: dict,
-    overworld: dict,
+    location_list: list[dict[str, Any]],
+    logic_dict: dict[str, Any],
+    overworld: dict[str, Any],
     top_most_region: str,
     fullpath: str,
     location_mapping_string: str,
@@ -53,8 +55,8 @@ def _write_locations(
 
     sub_region = loc_dict[region]
 
-    temp_lists = []
-    temp_dicts = []
+    temp_lists: list[str] = []
+    temp_dicts: list[str] = []
     for i in sub_region.keys():
         if isinstance(sub_region[i], list):
             temp_lists.append(i)
@@ -71,7 +73,7 @@ def _write_locations(
     )
     if len(temp_dicts) > 0:
         location_list[-1]["children"] = []
-        for index, location in enumerate(temp_dicts):
+        for location in temp_dicts:
             _write_locations(
                 sub_region,
                 location,
@@ -84,8 +86,9 @@ def _write_locations(
             )
     if len(temp_lists) > 0:
         location_list[-1]["sections"] = []
+        x = 0
+        y = 0
         for location in temp_lists:
-
             x = random.randint(10, 2500)
             y = random.randint(10, 2500)
             location_list[-1]["sections"].append(
@@ -108,10 +111,10 @@ def _write_locations(
 
 
 def _location_dict_builder(
-    locations_dict: dict,
-    path: list,
-    location_list: list,
-    logic_dict: dict,
+    locations_dict: dict[str, Any],
+    path: list[str],
+    location_list: list[str],
+    logic_dict: dict[str, Any],
     building: bool,
 ):
     """
@@ -170,9 +173,9 @@ def create_locations(path: str):  # , logic: dict[str, str]):
     :return: none
     """
     global open_chest, close_chest
-    read_input = []
-    location_list = []
-    hosted_item_list = []
+    read_input: list[list[Any]] = []
+    location_list: list[list[str]] = []
+    hosted_item_list: list[Any] = []
 
     temp = []
     # forbidden_with_quotes = ["<", ">", ":", "/", "\\", "|", "?", "*", '"']
@@ -236,14 +239,14 @@ def create_locations(path: str):  # , logic: dict[str, str]):
     with open(path + "/items/location_items.json", "w", encoding="utf-8") as location_items:
         item_json_obj = []
 
-        for item_name, item_types in hosted_item_list:
-            item_json_obj.append(_item_consumable_preset(item_name))
+        for item_name, _ in hosted_item_list:
+            item_json_obj.append(item_consumable_preset(item_name, item_name))
 
         location_items.write(f"{json.dumps(item_json_obj, indent=4)}")
     for i, _ in enumerate(location_list):
         if len(location_list[i][0]) > 1:
             temp.append(location_list[i][0])
-    lvls = sorted(set(temp))
+    lvls: list[str] = sorted(set(temp))
     #
 
     with open(path + "/scripts/locations_import.lua", "w", encoding="utf-8") as locations_file:
@@ -256,9 +259,9 @@ def create_locations(path: str):  # , logic: dict[str, str]):
             open(path + f"/scripts/logic/{level_name}.lua", "w").close()
         locations_file.write(f'Tracker:AddLocations("locations/Overworld.json")\n')
         open(path + "/scripts/logic/location_definition.lua", "w").close()
-    locations_dict = {e: {} for e in lvls}
+    locations_dict: dict[str, Any] = {e: {} for e in lvls}
 
-    logic_dict = {}  # extract_logic()
+    logic_dict: dict[str, Any] = {}  # extract_logic()
     """
     Braucht nen rework.
     idealerweise rekursiv damit man nicht auf 2-3 ebene beschränkt ist.
@@ -272,12 +275,12 @@ def create_locations(path: str):  # , logic: dict[str, str]):
     close_chest = "close.png"
     # open_chest = other_options[0]
     # close_chest = other_options[1]
-    with open(path + r"\scripts\autotracking\location_mapping.lua", encoding="utf-8") as mapping_file:
+    with open(os.path.join(path, "scripts/autotracking/location_mapping.lua"), encoding="utf-8") as mapping_file:
         location_mapping_string = mapping_file.read().replace("\n", "")
-    with open(path + rf"\locations\Overworld.json", "w", encoding="utf-8") as overworld:
+    with open(os.path.join(path, "locations/Overworld.json"), "w", encoding="utf-8") as overworld:
         overworld_list = []
         # temp_locations_region = ""
-        overworld_json = {
+        overworld_json: dict[str, Any] = {
             "name": "Overworld",
             "chest_unopened_img": f"/images/items/{close_chest}",
             "chest_opened_img": f"/images/items/{open_chest}",
@@ -342,7 +345,7 @@ def create_locations(path: str):  # , logic: dict[str, str]):
 #
 
 
-def create_maps(path: str, maps_names: list):
+def create_maps(path: str, maps_names: list[str]):
     """
     creates the maps used in the tabbed section in poptracker.
     uses only regions with more than 9 sections in it according to the sectioning in the location_mapping
@@ -361,12 +364,11 @@ def create_maps(path: str, maps_names: list):
 
 
 # #
-def preparations(path):
-    read_input = []
-    location_list = []
-    temp = []
-    lvl = set()
-    locations_dict = dict()
+def preparations(path: str) -> list[str]:
+    read_input: list[list[str]] = []
+    location_list: list[list[str]] = []
+    temp: list[str] = []
+    lvl: set[str] = set()
     # maps_names = []
     with open(path + "/scripts/autotracking/location_mapping.lua", encoding="utf-8") as mapping:
         while inputs := mapping.readline():
@@ -390,8 +392,9 @@ def preparations(path):
     for i, _ in enumerate(location_list):
         if len(location_list[i][0]) > 1:
             temp.append(location_list[i][0])
-    lvl = sorted(set(temp))
-    return lvl
+    lvl = sorted(set(temp))  # type: ignore
+    return lvl  # type: ignore
+
 
 if __name__ == "__main__":
     """
@@ -401,13 +404,15 @@ if __name__ == "__main__":
     that stage
     - Creates nested location-definitions for all the first stages of each location.
     """
+    import tkinter as tk
+    from tkinter import filedialog
     root = tk.Tk()
     root.withdraw()
     #
     print("Select the base-folder of the pack:")
-    base_path = tk.filedialog.askdirectory()
+    base_path = filedialog.askdirectory()
     print("Path to base-folder of the pack: ", base_path)
-    locations_dict = dict()
+    locations_dict: dict[str, Any] = dict()
     # maps_names = []
 
     lvls = preparations(base_path)

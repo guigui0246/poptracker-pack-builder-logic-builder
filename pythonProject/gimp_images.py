@@ -19,12 +19,11 @@ def _gimp_png(save_path: str, name: str, length: int = 28):
     print(multiline_count)
     charsize = (length * 12, 52 * (multiline_count + 1))
     W, H = charsize
-    color = "#fff"
     if multiline_count > 0:
         save_name = name.replace("\n", " ")
     else:
         save_name = name
-    path = rf'{save_path}\{save_name.replace(" ","_").lower()}.png'
+    path = rf'{save_path}\{save_name.replace(" ", "_").lower()}.png'
     print(path)
     # bg_img = Image.new("RGBA", charsize, color)
     mask_img = Image.new("RGBA", charsize, 0)
@@ -114,13 +113,13 @@ if __name__ == "__main__":
     You are about to create images from a file containing a list of strings where each line is separated by a \\n (
     newline character)
     This List should be in on of the following formats:
-    
-    - a single item  such as: "Complete Mask Quest" 
+
+    - a single item  such as: "Complete Mask Quest"
     - a list of possible combinations such as: "Logic Rules", glitchless, glitched, no logic
-    
+
     the option with a single item will be converted into an image with a single line
-    
-    the option in list form will be combined one by one with the first one resulting in 
+
+    the option in list form will be combined one by one with the first one resulting in
     - "Logic Rules" glitchless
     - "Logic Rules" glitched
     - "Logic Rules" no logic
@@ -135,18 +134,17 @@ if __name__ == "__main__":
     print("Path to folder to save file to: ", save_to_path)
     with open(rf"{text_to_image_filepath}", encoding="utf-8") as names:
         # max = 0
-        line_split = []
+        line_split: list[list[str] | str] = []
         for line in names:
             if ", " in line:
                 line_split.append(line.replace("\n", "").replace('"', "").split(", "))
             else:
                 line_split.append(line.replace("\n", "").replace('"', ""))
         for index, lines in enumerate(line_split):
-            if len(lines) > 1 and isinstance(lines, list):
+            if isinstance(lines, list):
                 for i, _ in enumerate(lines):
                     if i != 0:
                         # print('\n'.join((lines[0], lines[i])))
                         _gimp_png(save_to_path, "\n".join((lines[0], lines[i])))
-
             else:
                 _gimp_png(save_to_path, lines)

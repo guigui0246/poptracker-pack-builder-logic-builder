@@ -1,10 +1,11 @@
 import json
 import tkinter as tk
 from tkinter import filedialog
+from typing import Any, Sequence
 
 
 def _stages(item_name: str, full_name: str):
-    stage1 = {
+    stage1: dict[str, Any] = {
         "name": f"{full_name} stage1",
         "inherit_codes": True,
         "img": f"/images/items/{item_name}.png",
@@ -15,7 +16,7 @@ def _stages(item_name: str, full_name: str):
         "secondary_codes": "",
     }
 
-    stage2 = {
+    stage2: dict[str, Any] = {
         "name": f"{full_name} stage2",
         "inherit_codes": True,
         "img": f"/images/items/{item_name}.png",
@@ -26,7 +27,7 @@ def _stages(item_name: str, full_name: str):
         "secondary_codes": "",
     }
 
-    stage3 = {
+    stage3: dict[str, Any] = {
         "name": f"{full_name} stage3",
         "inherit_codes": True,
         "img": f"/images/items/{item_name}.png",
@@ -40,7 +41,7 @@ def _stages(item_name: str, full_name: str):
 
 
 def _item_toggle_preset(item_name: str, full_name: str):
-    toggle_json_preset = {
+    toggle_json_preset: dict[str, Any] = {
         "name": full_name,
         "type": "toggle",
         "img": f"images/items/{item_name}.png",
@@ -55,35 +56,35 @@ def _item_toggle_preset(item_name: str, full_name: str):
 
 
 def _item_progressive_toggle_preset(item_name: str, full_name: str):
-    progressive_toggle_json_preset = {
+    progressive_toggle_json_preset: dict[str, Any] = {
         "name": f"{full_name}",
         "type": "progressive_toggle",
         "loop": False,
         "initial_stage_idx": 0,
         "initial_active_state": False,
         "overlay_align": "right",
-        "stages": _stages(item_name),
+        "stages": _stages(item_name, full_name),
         # "codes": f"{item_name.replace(' ', '')}",
     }
     return progressive_toggle_json_preset
 
 
 def _item_progressive_preset(item_name: str, full_name: str):
-    progressive_json_preset = {
+    progressive_json_preset: dict[str, Any] = {
         "name": f"{full_name}",
         "type": "progressive",
         "loop": False,
         "allow_disabled": True,
         "initial_stage_idx": 0,
         "overlay_align": "right",
-        "stages": _stages(item_name),
+        "stages": _stages(item_name, full_name),
         # "codes": f"{item_name.replace(' ', '')}",
     }
     return progressive_json_preset
 
 
-def _item_consumable_preset(item_name: str, full_name: str):
-    consumable_json_preset = {
+def item_consumable_preset(item_name: str, full_name: str):
+    consumable_json_preset: dict[str, Any] = {
         "name": full_name,
         "type": "consumable",
         "img": f"images/items/{item_name}.png",
@@ -126,11 +127,11 @@ def create_items(path: str):
     :return: none
     """
     file = "item_mapping"
-    read_input = []
-    item_names = {}
-    item_list = []
-    first_open = 0
-    last_close = 0
+    read_input: list[list[str]] = []
+    item_names: dict[str, str] = {}
+    item_list: list[Sequence[str]] = []
+    first_open: int = 0
+    last_close: int = 0
     print(file)
     with open(path + rf"/scripts/autotracking/{file}.lua", encoding="utf-8") as mapping:
         while inputs := mapping.readline():
@@ -147,7 +148,7 @@ def create_items(path: str):
                         read_input.append(inputs.split("="))
             else:
                 pass
-    with open(path + rf"/scripts/autotracking/item_names.lua", encoding="utf-8") as item_to_names_mapping:
+    with open(path + "/scripts/autotracking/item_names.lua", encoding="utf-8") as item_to_names_mapping:
         while inputs := item_to_names_mapping.readline():
             if "]" in inputs:
                 if not (
@@ -166,7 +167,7 @@ def create_items(path: str):
         last_close = read_input[k][1].index("}}") or 0
         # second_close = read_input[k][1][first_close:].index('}')
         read_input[k][1] = (
-            read_input[k][1][first_open + 2 : last_close].strip().replace(" ", "")
+            read_input[k][1][first_open + 2: last_close].strip().replace(" ", "")
         )
 
         if "},{" in read_input[k][1]:
@@ -193,7 +194,7 @@ def create_items(path: str):
                 case "progressive_toggle":
                     item_json_obj.append(_item_progressive_toggle_preset(item_name, item_names[item_name]))
                 case "consumable":
-                    item_json_obj.append(_item_consumable_preset(item_name, item_names[item_name]))
+                    item_json_obj.append(item_consumable_preset(item_name, item_names[item_name]))
                 case "static":
                     item_json_obj.append(_item_static_preset(item_name, item_names[item_name]))
                 case "composite_toggle":
@@ -214,6 +215,6 @@ if __name__ == "__main__":
     root.withdraw()
     #
     print("Select the base-folder of the pack:")
-    save_file_path = tk.filedialog.askdirectory()
+    save_file_path = filedialog.askdirectory()
     print("Path to base-folder of the pack: ", save_file_path)
     create_items(save_file_path)

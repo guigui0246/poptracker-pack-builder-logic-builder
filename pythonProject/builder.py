@@ -1,26 +1,28 @@
 import os
-import tkinter as tk
-from tkinter import filedialog
+from typing import Any
 import requests
 
-import item_json
-import location_json
-import tracker_layout
-import base_structure
-import logic
+from . import item_json
+from . import location_json
+from . import tracker_layout
+from . import base_structure
+from . import logic as _
+del _
 
-lvls = set()
-locations_dict = dict()
-maps_names = []
-logic = dict()
-open_chest = "open.png"
-close_chest = "close.png"
+lvls: set[str] | list[str] = set()
+locations_dict: dict[str, str] = dict()
+maps_names: list[str] = []
+logic: dict[str, Any] = dict()
+open_chest: str = "open.png"
+close_chest: str = "close.png"
 
 if __name__ == "__main__":
+    import tkinter as tk
+    from tkinter import filedialog
     root = tk.Tk()
     root.withdraw()
 
-    read_file_path = tk.filedialog.askdirectory()
+    read_file_path = filedialog.askdirectory()
     if not os.path.exists(read_file_path + "/datapackage_url.txt"):
         with open(read_file_path + "/datapackage_url.txt", "w", encoding="utf-8") as base_file:
             url = (
@@ -40,11 +42,11 @@ if __name__ == "__main__":
     )
 
     item_json.create_items(path=read_file_path)
-    read_input = []
-    location_list = []
-    temp = []
-    lvls = set()
-    locations_dict = dict()
+    read_input: list[list[str]] = []
+    location_list: list[list[str]] = []
+    temp: list[str] = []
+    lvls: set[str] | list[str] = set()
+    locations_dict: dict[str, str] = dict()
     with open(read_file_path + "/scripts/autotracking/location_mapping.lua", encoding="utf-8") as mapping:
         while inputs := mapping.readline():
             if "]" in inputs:
@@ -54,7 +56,7 @@ if __name__ == "__main__":
                 pass
     for k, _ in enumerate(read_input):
         read_input[k][1] = read_input[k][1][
-            read_input[k][1].index("{") + 1 : read_input[k][1].index("}")
+            read_input[k][1].index("{") + 1: read_input[k][1].index("}")
         ]
         location_list.append(
             read_input[k][1].replace("@", "").replace('"', "").split("/")

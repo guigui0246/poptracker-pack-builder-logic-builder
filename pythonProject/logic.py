@@ -1,4 +1,10 @@
-def generalized_rule_extractor(base_list: [str], delimiter1: str, delimiter2: str):
+import itertools
+import os
+from tkinter import filedialog
+from typing import Any, Sequence
+
+
+def generalized_rule_extractor(base_list: str, delimiter1: str, delimiter2: str):
     """
     try's to open a possibly provided file containing the used logic for the AP-rando.
     for now, it reads the file and only looks for lambda rules. may change later to get expanded to lists/dicts but
@@ -8,15 +14,15 @@ def generalized_rule_extractor(base_list: [str], delimiter1: str, delimiter2: st
     writes the extracted rules into a file as backup.
     """
     try:
-        x = " | ".join(" + ".join(base_list.split(delimiter1)).split(delimiter2)).split(
+        x: Sequence[Any] = " | ".join(" + ".join(base_list.split(delimiter1)).split(delimiter2)).split(
             " | "
         )
 
         for iter, sub_list in enumerate(x):
             if " + " in sub_list:
-                x[iter] = sub_list.split("+")
+                x[iter] = sub_list.split("+")  # type: ignore
             else:
-                x[iter] = [sub_list]
+                x[iter] = [sub_list]  # type: ignore
 
             for sub_iter, code in enumerate(x[iter]):
                 if '"' in code:
@@ -25,13 +31,13 @@ def generalized_rule_extractor(base_list: [str], delimiter1: str, delimiter2: st
                     search = "'"
                 else:
                     continue
-                x[iter][sub_iter] = code[code.index(search) + 1 : code.index(search)]
-    except:
+                x[iter][sub_iter] = code[code.index(search) + 1: code.index(search)]  # type: ignore
+    except Exception:
         x = base_list
     return list(itertools.product(*x))  # list cross multiplication to generate every
 
 
-def slice_at_brackets(list_to_slice: []):
+def slice_at_brackets(list_to_slice: str) -> list[str]:
     lbracket = [
         j + 1 for j in range(len(list_to_slice)) if list_to_slice.startswith("(", j)
     ]
@@ -44,7 +50,7 @@ def slice_at_brackets(list_to_slice: []):
     rcount = 0
     stack = [lbracket[lcount - 1]]
     lastslice = 0
-    temp = []
+    temp: list[str] = []
     while lcount < len(lbracket) and rcount < len(lbracket):
         # print("while", lcount, rcount)
         if len(stack) == 0 and lcount > 0 and rcount > 0:
@@ -55,8 +61,8 @@ def slice_at_brackets(list_to_slice: []):
             else:
                 # print(temp)
                 # print(rbracket[rcount], lbracket[lcount])
-                if " or " in list_to_slice[lbracket[lcount] : rbracket[rcount]]:
-                    temp.append(list_to_slice[lastslice : slice - 2])
+                if " or " in list_to_slice[lbracket[lcount]: rbracket[rcount]]:
+                    temp.append(list_to_slice[lastslice: slice - 2])
                     lastslice = slice
                 # else:
                 #     # print(f'logic_temp[{i}][1]', lastslice, logic_temp[i][1][lastslice:])
@@ -100,13 +106,13 @@ def slice_at_brackets(list_to_slice: []):
     return temp
 
 
-def extract_logic():
+def extract_logic() -> dict[str, Any]:
     """1 location             2+ rules, (if multiple lambdas then more lists else sublists in position 2
     ###     logic_temp[i] layout: [ [] ,                   [ [ ] , [ ] ], [ ], [ [ ] , [ ] ] ]
                             location_str    lambda            and    or   or       and
     """
     global logic
-    logic_temp = []
+    logic_temp: list[list[Any]] = []
     logic_dict = {}
     file_path = filedialog.askopenfilename()
     if not file_path == "":
@@ -120,7 +126,7 @@ def extract_logic():
 
             for i, test in enumerate(logic_temp):
                 # i = 81
-                if not "(" in logic_temp[i][1] and not ")" in logic_temp[i][1]:
+                if "(" not in logic_temp[i][1] and ")" not in logic_temp[i][1]:
                     logic_temp[i][1] = []
                 else:
                     temp = slice_at_brackets(logic_temp[i][1])
@@ -128,7 +134,7 @@ def extract_logic():
                         # print(temp)
                         logic_temp[i][1] = temp
 
-                    if type(logic_temp[i][1]) == list:
+                    if isinstance(logic_temp[i][1], list):
                         for counter, _ in enumerate(logic_temp[i][1]):
 
                             logic_temp[i][1][counter] = generalized_rule_extractor(
@@ -151,7 +157,7 @@ def extract_logic():
                     else:
                         continue
                     logic_temp[i][0] = test[0][
-                        test[0].index(search) + 1 : test[0].index(search)
+                        test[0].index(search) + 1: test[0].index(search)
                     ]
 
             for i, _ in enumerate(logic_temp):
@@ -159,7 +165,7 @@ def extract_logic():
                 for j, _ in enumerate(logic_temp[i][:-2]):
                     logic_temp[i][j] = logic_temp[i][j].strip('"').strip("'")
 
-    with open(read_file_path + "/logic_backup.txt", "w", encoding="utf-8") as logic_backup:
+    with open(os.path.join(file_path, "logic_backup.txt"), "w", encoding="utf-8") as logic_backup:
         for line in logic_temp:
             logic_backup.write(f"{line}\n")
     delimiter = ['", "', "', '", '",', "',", " - ", ": ", ") "]
@@ -176,8 +182,8 @@ def extract_logic():
     region_temp = []
     for i, _ in enumerate(logic_temp):
         region_temp.append(logic_temp[i][0][0])
-    region_temp_set = set(region_temp)
-    logic_dict = {e: {} for e in region_temp_set}
+    region_temp_set: set[str] = set(region_temp)
+    logic_dict: dict[str, Any] = {e: {} for e in region_temp_set}
     for index, _ in enumerate(logic_temp):
         sub_list = logic_temp[index][0]
         if len(logic_temp[index][1]) == 1:
@@ -188,7 +194,7 @@ def extract_logic():
                 logic_dict[sub_list[0]][sub_list[1]].update(
                     {sub_list[2]: logic_temp[index][1]}
                 )
-            except:
+            except Exception:
                 logic_dict[sub_list[0]].update({sub_list[1]: {}})
                 logic_dict[sub_list[0]][sub_list[1]].update(
                     {sub_list[2]: logic_temp[index][1]}
@@ -196,11 +202,11 @@ def extract_logic():
         elif len(sub_list) == 2:
             try:
                 logic_dict[sub_list[0]].update({sub_list[1]: logic_temp[index][1]})
-            except:
+            except Exception:
                 pass
         elif len(sub_list) == 1:
             try:
                 logic_dict.update({sub_list[0]: logic_temp[index][1]})
-            except:
+            except Exception:
                 pass
     return logic_dict
